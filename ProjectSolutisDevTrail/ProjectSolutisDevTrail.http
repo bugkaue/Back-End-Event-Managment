@@ -1,0 +1,6 @@
+@ProjectSolutisDevTrail_HostAddress = http://localhost:5144
+
+GET {{ProjectSolutisDevTrail_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
