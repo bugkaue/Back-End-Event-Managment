@@ -193,6 +193,9 @@ publish/
 PublishScripts/
 appsettings.json
 appsettings.*.json
+
+launchSettings.json
+launchSettings.*.json
 # NuGet Packages
 *.nupkg
 # NuGet Symbol Packages

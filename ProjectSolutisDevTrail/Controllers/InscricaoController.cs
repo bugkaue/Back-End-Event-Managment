@@ -10,22 +10,8 @@ namespace ProjectSolutisDevTrail.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class InscricaoController : ControllerBase
+public class InscricaoController(IMapper _mapper, IEventoService _eventoService, IInscricaoService _inscricaoService, IInscricaoRepository _inscricaoRepository): ControllerBase
 {
-    private readonly IMapper _mapper;
-    private readonly IEventoService _eventoService;
-    private readonly IInscricaoService _inscricaoService; // Service for Inscricao
-    private readonly ReportService _reportService;
-    private readonly IInscricaoRepository _inscricaoRepository; // Add this line
-
-    public InscricaoController(IMapper mapper, IEventoService eventoService, ReportService reportService, IInscricaoService inscricaoService, IInscricaoRepository inscricaoRepository) // Add IInscricaoRepository parameter
-    {
-        _mapper = mapper;
-        _eventoService = eventoService;
-        _reportService = reportService;
-        _inscricaoService = inscricaoService; // Inject InscricaoService
-        _inscricaoRepository = inscricaoRepository; // Initialize _inscricaoRepository
-    }
     [HttpPost]
     public async Task<ActionResult<ReadInscricaoDto>> CreateInscricao(CreateInscricaoDto createInscricaoDto)
     {
@@ -37,7 +23,7 @@ public class InscricaoController : ControllerBase
         }
 
         // Verifica se o evento está finalizado
-        var evento = await _eventoService.GetEventoByIdAsync(createInscricaoDto.EventoId);
+        var evento = await _eventoService.GetByIdAsync(createInscricaoDto.EventoId);
         if (evento == null)
         {
             return NotFound("Evento não encontrado.");
@@ -120,16 +106,5 @@ public class InscricaoController : ControllerBase
             return NotFound();
         }
         return NoContent();
-    }
-
-    [HttpGet("evento/{eventoId}/download")]
-    public async Task<IActionResult> DownloadReport(int eventoId)
-    {
-        var memoryStream = new MemoryStream();
-        await _inscricaoService.GenerateReportAsync(eventoId, memoryStream);
-
-        memoryStream.Position = 0; // Resete a posição para o início do fluxo
-
-        return File(memoryStream, "application/pdf", $"Relatorio_Evento_{eventoId}.pdf");
     }
 }

@@ -24,10 +24,11 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         return await _dbSet.FindAsync(id);
     }
 
-    public async Task AddAsync(T entity)
+    public async Task<T> AddAsync(T entity)
     {
         await _dbSet.AddAsync(entity);
         await _context.SaveChangesAsync();
+        return entity;
     }
 
     public async Task UpdateAsync(T entity)
@@ -44,5 +45,9 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
             _dbSet.Remove(entity);
             await _context.SaveChangesAsync();
         }
+    }
+    public async Task<IEnumerable<T>> GetByIdsAsync(IEnumerable<int> ids)
+    {
+        return await _dbSet.Where(e => ids.Contains((int)typeof(T).GetProperty("Id").GetValue(e))).ToListAsync();
     }
 }

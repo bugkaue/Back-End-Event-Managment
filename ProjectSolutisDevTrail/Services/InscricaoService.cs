@@ -51,9 +51,9 @@ public class InscricaoService : IInscricaoService
         return await _inscricaoRepository.GetInscricoesCountAsync();
     }
 
-    public async Task AddAsync(Inscricao inscricao)
+    public async Task<Inscricao> AddAsync(Inscricao inscricao)
     {
-        await _inscricaoRepository.AddAsync(inscricao);
+        return await _inscricaoRepository.AddAsync(inscricao);
     }
 
     public async Task DeleteAsync(int id)
@@ -137,6 +137,10 @@ public class InscricaoService : IInscricaoService
                 document.Close();
             }
         }
+    }
+    public async Task<IEnumerable<Inscricao>> GetByIdsAsync(IEnumerable<int> ids)
+    {
+        return await _inscricaoRepository.GetByIdsAsync(ids);
     }
 }
 
