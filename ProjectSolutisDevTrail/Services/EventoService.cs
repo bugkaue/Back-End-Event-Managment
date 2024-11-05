@@ -40,17 +40,13 @@ public class EventoService(IEventoRepository _eventoRepository, IInscricaoReposi
         {
             Descricao = $"Evento excluído: {evento.Titulo}",
             DataHora = DateTime.Now,
+            UsuarioId = id.ToString()
         };
-
         await _atividadeService.AdicionarAtividadeAsync(atividadeRecente);
         await _eventoRepository.DeleteAsync(id);
     }
-          public async Task<IEnumerable<Evento>> GetByIdsAsync(IEnumerable<int> ids)
-    {
-        return await _eventoRepository.GetByIdsAsync(ids);
-    }
 
-       public async Task<int> GetEventosCountAsync()
+    public async Task<int> GetEventosCountAsync()
     {
         var eventos = await _eventoRepository.GetAllAsync();
         return eventos.Count();
@@ -84,5 +80,10 @@ public class EventoService(IEventoRepository _eventoRepository, IInscricaoReposi
     {
         var eventos = await _eventoRepository.GetByIdsAsync(eventoIds);
         return eventos.ToList();
+    }
+
+    public async Task<IEnumerable<Evento>> GetByIdsAsync(IEnumerable<int> ids)
+    {
+        return await _eventoRepository.GetByIdsAsync(ids);
     }
 }
