@@ -50,11 +50,9 @@ public class AccountController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        // Verifica se o e-mail já está registrado
         var existingUser = await _userManager.FindByEmailAsync(model.Email);
         if (existingUser != null)
         {
-            // Se o usuário com o e-mail já existe, retorna uma mensagem de erro clara
             return BadRequest(new { message = "O e-mail fornecido já está registrado." });
         }
 
@@ -72,7 +70,6 @@ public class AccountController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(result.Errors);
 
-        // Verifica se o papel "User" existe, caso contrário, cria-o
         var roleExists = await _roleManager.RoleExistsAsync("User");
         if (!roleExists)
         {
@@ -81,29 +78,24 @@ public class AccountController : ControllerBase
                 return BadRequest("Erro ao criar o papel 'User'.");
         }
 
-        // Adicionar o usuário ao papel "User"
         var addToRoleResult = await _userManager.AddToRoleAsync(user, "User");
         if (!addToRoleResult.Succeeded)
             return BadRequest(addToRoleResult.Errors);
 
-        // Criar o participante com as informações do usuário
         var participante = new Participante
         {
             Nome = model.Nome,
             Sobrenome = model.Sobrenome,
             Email = model.Email,
-            UsuarioId = user.Id // Relaciona o participante com o usuário
+            UsuarioId = user.Id
         };
 
-        // Adicionar o participante ao contexto e salvar
         _context.Participantes.Add(participante);
         await _context.SaveChangesAsync();
 
-        // Gerar token de confirmação de e-mail
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var confirmationLink = Url.Action(nameof(ConfirmEmail), "Account", new { token, email = user.Email }, Request.Scheme);
 
-        // Enviar e-mail de confirmação
         if (!string.IsNullOrEmpty(confirmationLink))
         {
             await SendConfirmationEmail(user.Email, confirmationLink);
@@ -116,7 +108,7 @@ public class AccountController : ControllerBase
         return Ok(new
         {
             message = "Registro bem-sucedido! Verifique seu e-mail para confirmar sua conta.",
-            participanteId = participante.Id // Retorna o ID do participante criado
+            participanteId = participante.Id
         });
     }
 
@@ -151,14 +143,20 @@ public class AccountController : ControllerBase
 
             var participante = await _context.Participantes
                 .FirstOrDefaultAsync(p => p.UsuarioId == user.Id);
+
+            // Obtém os papéis do usuário
             var userRoles = await _userManager.GetRolesAsync(user);
+
+            // Log para depuração
+            Console.WriteLine($"Usuário: {user.Email}, Papéis: {string.Join(", ", userRoles)}");
+
             var token = GenerateJwtToken(user);
 
             return Ok(new
             {
                 token,
                 participanteId = participante?.Id,
-                roles = userRoles,
+                roles = userRoles, // Retorna os papéis do usuário
                 isAdmin
             });
         }
@@ -267,7 +265,7 @@ public class AccountController : ControllerBase
 
     private string GenerateJwtToken(Usuario user)
     {
-        var claims = new List<Claim> 
+        var claims = new List<Claim>
     {
         new Claim(JwtRegisteredClaimNames.Sub, user.UserName ?? string.Empty),
         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
@@ -292,7 +290,7 @@ public class AccountController : ControllerBase
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-
+   
     [HttpDelete("delete-user/{email}")]
     public async Task<IActionResult> DeleteUser(string email)
     {
