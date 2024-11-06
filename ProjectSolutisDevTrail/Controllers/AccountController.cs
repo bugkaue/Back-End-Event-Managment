@@ -24,12 +24,16 @@ public class AccountController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly ISendGridClient _sendGridClient; // Usando SendGrid
     private readonly EventoContext _context; // Contexto do banco
+    private readonly RoleManager<IdentityRole> _roleManager;
+
 
     public AccountController(
         UserManager<Usuario> userManager,
         SignInManager<Usuario> signInManager,
         IConfiguration configuration,
         ISendGridClient sendGridClient,
+        RoleManager<IdentityRole> roleManager,
+
         EventoContext context) // Injetando o contexto do evento
     {
         _userManager = userManager;
@@ -37,6 +41,7 @@ public class AccountController : ControllerBase
         _configuration = configuration;
         _sendGridClient = sendGridClient; // Inicializando o SendGrid Client
         _context = context; // Inicializando o contexto
+        _roleManager = roleManager;
     }
 
     [HttpPost("register")]
@@ -67,11 +72,25 @@ public class AccountController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(result.Errors);
 
+        // Verifica se o papel "User" existe, caso contrário, cria-o
+        var roleExists = await _roleManager.RoleExistsAsync("User");
+        if (!roleExists)
+        {
+            var roleResult = await _roleManager.CreateAsync(new IdentityRole("User"));
+            if (!roleResult.Succeeded)
+                return BadRequest("Erro ao criar o papel 'User'.");
+        }
+
+        // Adicionar o usuário ao papel "User"
+        var addToRoleResult = await _userManager.AddToRoleAsync(user, "User");
+        if (!addToRoleResult.Succeeded)
+            return BadRequest(addToRoleResult.Errors);
+
         // Criar o participante com as informações do usuário
         var participante = new Participante
         {
             Nome = model.Nome,
-            Sobrenome = model.Sobrenome, 
+            Sobrenome = model.Sobrenome,
             Email = model.Email,
             UsuarioId = user.Id // Relaciona o participante com o usuário
         };
@@ -85,7 +104,14 @@ public class AccountController : ControllerBase
         var confirmationLink = Url.Action(nameof(ConfirmEmail), "Account", new { token, email = user.Email }, Request.Scheme);
 
         // Enviar e-mail de confirmação
-        await SendConfirmationEmail(user.Email, confirmationLink);
+        if (!string.IsNullOrEmpty(confirmationLink))
+        {
+            await SendConfirmationEmail(user.Email, confirmationLink);
+        }
+        else
+        {
+            return BadRequest("Erro ao gerar o link de confirmação de e-mail.");
+        }
 
         return Ok(new
         {
@@ -93,6 +119,7 @@ public class AccountController : ControllerBase
             participanteId = participante.Id // Retorna o ID do participante criado
         });
     }
+
     [HttpGet("confirm-email")]
     public async Task<IActionResult> ConfirmEmail(string token, string email)
     {
@@ -105,7 +132,6 @@ public class AccountController : ControllerBase
         else
             return BadRequest("Falha na confirmação do e-mail.");
     }
-
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto model)
@@ -133,7 +159,7 @@ public class AccountController : ControllerBase
                 token,
                 participanteId = participante?.Id,
                 roles = userRoles,
-                isAdmin // Retorna a informação se o usuário é um administrador
+                isAdmin
             });
         }
 

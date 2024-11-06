@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ProjectSolutisDevTrail.Models;
 
@@ -17,7 +18,7 @@ public class EventoContext : IdentityDbContext<Usuario>
     // Configuração dos relacionamentos
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder); 
+        base.OnModelCreating(modelBuilder);
 
         // Relacionamento entre Evento e Inscrição (1:N)
         modelBuilder.Entity<Inscricao>()
