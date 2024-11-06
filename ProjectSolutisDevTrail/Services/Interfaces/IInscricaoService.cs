@@ -7,6 +7,7 @@ namespace ProjectSolutisDevTrail.Services.Interfaces;
 
 public interface IInscricaoService : IGenericRepository<Inscricao>, IInscricaoRepository
 {
+    Task<IEnumerable<ReadEventoDto>> GetEventosComInscricoesByParticipanteIdAsync(int participanteId);
     Task<IEnumerable<Evento>> GetEventosByParticipanteIdAsync(int participanteId); 
     Task<Inscricao> GetInscricaoByParticipanteAndEventoIdAsync(int participanteId, int eventoId);
     Task<IEnumerable<InscricaoCountDto>> GetInscricoesCountsByEventoIdsAsync(List<int> eventoIds);

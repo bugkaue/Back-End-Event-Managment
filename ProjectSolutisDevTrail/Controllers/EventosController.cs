@@ -7,7 +7,6 @@ using ProjectSolutisDevTrail.Services.Interfaces;
 [ApiController]
 public class EventosController(IEventoService _eventoService, IMapper _mapper) : ControllerBase 
 {
-    // Obter todos os eventos
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ReadEventoDto>>> GetAllEventos()
     {
@@ -30,7 +29,6 @@ public class EventosController(IEventoService _eventoService, IMapper _mapper) :
         return Ok(readEventoDtos);
     }
 
-    // Obter um evento por ID
     [HttpGet("{id}")]
     public async Task<ActionResult<ReadEventoDto>> GetEventoById(int id)
     {
@@ -47,7 +45,6 @@ public class EventosController(IEventoService _eventoService, IMapper _mapper) :
         return Ok(readEventoDto);
     }
 
-    // Adicionar um novo evento
     [HttpPost]
     public async Task<ActionResult<ReadEventoDto>> AddEvento([FromBody] CreateEventoDto createEventoDto)
     {
@@ -56,7 +53,6 @@ public class EventosController(IEventoService _eventoService, IMapper _mapper) :
         return CreatedAtAction(nameof(GetEventoById), new { id = readEventoDto.Id }, readEventoDto);
     }
 
-    // Atualizar um evento existente
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateEvento(int id, [FromBody] UpdateEventoDto updateEventoDto)
     {
@@ -72,7 +68,6 @@ public class EventosController(IEventoService _eventoService, IMapper _mapper) :
         return NoContent();
     }
 
-    // Excluir um evento
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteEvento(int id)
     {
@@ -86,14 +81,13 @@ public class EventosController(IEventoService _eventoService, IMapper _mapper) :
         return NoContent();
     }
 
-    // Contar todos os eventos
     [HttpGet("count")]
     public async Task<ActionResult<int>> GetEventosCount()
     {
         var count = await _eventoService.GetEventosCountAsync();
         return Ok(count);
     }
-    // Contar eventos finalizados
+
     [HttpGet("count/finalizados")]
     public async Task<ActionResult<int>> GetEventosFinalizadosCount()
     {

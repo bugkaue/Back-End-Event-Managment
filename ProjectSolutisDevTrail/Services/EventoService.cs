@@ -20,12 +20,29 @@ public class EventoService(IEventoRepository _eventoRepository, IInscricaoReposi
 
     public async Task<Evento> AddAsync(Evento entity)
     {
-        return await _eventoRepository.AddAsync(entity);
-    }
+        var evento = await _eventoRepository.AddAsync(entity);
 
-    public async Task UpdateAsync(Evento entity)
+        var atividadeRecente = new AtividadeRecente
+        {
+            Descricao = $"Evento adicionado: {evento.Titulo}",
+            DataHora = DateTime.Now,
+            UsuarioId = evento.Titulo // Certifique-se de que UsuarioId não seja nulo
+        };
+        await _atividadeService.AdicionarAtividadeAsync(atividadeRecente);
+
+        return evento;
+    }
+      public async Task UpdateAsync(Evento entity)
     {
         await _eventoRepository.UpdateAsync(entity);
+
+        var atividadeRecente = new AtividadeRecente
+        {
+            Descricao = $"Evento atualizado: {entity.Titulo}",
+            DataHora = DateTime.Now,
+            UsuarioId = entity.Titulo
+        };
+        await _atividadeService.AdicionarAtividadeAsync(atividadeRecente);
     }
 
     public async Task DeleteAsync(int id)

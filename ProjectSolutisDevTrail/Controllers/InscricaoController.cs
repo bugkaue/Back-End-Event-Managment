@@ -1,110 +1,95 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using ProjectSolutisDevTrail.Data.Dtos;
-using ProjectSolutisDevTrail.Data.Repositories.Interfaces;
 using ProjectSolutisDevTrail.Models;
-using ProjectSolutisDevTrail.Services;
 using ProjectSolutisDevTrail.Services.Interfaces;
 
 namespace ProjectSolutisDevTrail.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class InscricaoController(IMapper _mapper, IEventoService _eventoService, IInscricaoService _inscricaoService, IInscricaoRepository _inscricaoRepository): ControllerBase
+public class InscricaoController(IMapper mapper, IEventoService eventoService, IInscricaoService inscricaoService) : ControllerBase
 {
     [HttpPost]
     public async Task<ActionResult<ReadInscricaoDto>> CreateInscricao(CreateInscricaoDto createInscricaoDto)
     {
-        // Verifica se o participante já está inscrito no evento
-        var existingInscricao = await _inscricaoService.GetInscricaoByParticipanteAndEventoIdAsync(createInscricaoDto.ParticipanteId, createInscricaoDto.EventoId);
+        var existingInscricao = await inscricaoService.GetInscricaoByParticipanteAndEventoIdAsync(createInscricaoDto.ParticipanteId, createInscricaoDto.EventoId);
         if (existingInscricao != null)
         {
             return BadRequest("O participante já está inscrito neste evento.");
         }
 
-        // Verifica se o evento está finalizado
-        var evento = await _eventoService.GetByIdAsync(createInscricaoDto.EventoId);
+        var evento = await eventoService.GetByIdAsync(createInscricaoDto.EventoId);
         if (evento == null)
         {
             return NotFound("Evento não encontrado.");
         }
+
         if (evento.IsFinalizado)
         {
             return BadRequest("Não é possível se inscrever em um evento que já foi finalizado.");
         }
 
-        var inscricao = _mapper.Map<Inscricao>(createInscricaoDto);
+        var inscricao = mapper.Map<Inscricao>(createInscricaoDto);
         inscricao.DataInscricao = DateTime.Now;
 
-        await _inscricaoService.AddAsync(inscricao); // Use service to add inscricao
+        await inscricaoService.AddAsync(inscricao);
 
-        return CreatedAtAction(nameof(GetInscricaoById), new { id = inscricao.Id }, _mapper.Map<ReadInscricaoDto>(inscricao));
+        return CreatedAtAction(nameof(GetInscricaoById), new { id = inscricao.Id }, mapper.Map<ReadInscricaoDto>(inscricao));
     }
 
-       [HttpGet("{participanteId}/eventos")]
-    public async Task<IEnumerable<EventoSimplificadoDto>> GetEventosByParticipanteIdAsync(int participanteId)
+    [HttpGet("{participanteId}/eventos")]
+    public async Task<ActionResult<IEnumerable<ReadEventoDto>>> GetEventosByParticipanteIdAsync(int participanteId)
     {
-        var eventos = await _inscricaoRepository.GetEventosByParticipanteIdAsync(participanteId);
-
-        // Retrieve all the counts in a single query if possible
-        var eventoIds = eventos.Select(e => e.Id).ToList();
-        var inscricoesCounts = await _inscricaoRepository.GetInscricoesCountsByEventoIdsAsync(eventoIds); // Ensure this matches
-
-        var eventoDtos = eventos.Select(evento => new EventoSimplificadoDto
+        var readEventoDtos = await inscricaoService.GetEventosComInscricoesByParticipanteIdAsync(participanteId);
+        if (!readEventoDtos.Any())
         {
-            EventoId = evento.Id,
-            Titulo = evento.Titulo,
-            Descricao = evento.Descricao,
-            DataHora = evento.DataHora,
-            Local = evento.Local,
-            CapacidadeMaxima = evento.CapacidadeMaxima,
-            IsAtivo = evento.IsAtivo,
-            NumeroInscricoes = inscricoesCounts.FirstOrDefault(ic => ic.EventoId == evento.Id)?.NumeroInscricoes ?? 0
-        });
+            return NotFound("Nenhum evento encontrado para o participante.");
+        }
 
-        return eventoDtos.ToList();
+        return Ok(readEventoDtos);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<ReadInscricaoDto>> GetInscricaoById(int id)
     {
-        var inscricao = await _inscricaoService.GetByIdAsync(id); // Use service to get inscricao
+        var inscricao = await inscricaoService.GetByIdAsync(id);
         if (inscricao == null)
         {
             return NotFound();
         }
-        return _mapper.Map<ReadInscricaoDto>(inscricao);
+        return mapper.Map<ReadInscricaoDto>(inscricao);
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ReadInscricaoDto>>> GetAllInscricoes()
     {
-        var inscricoes = await _inscricaoService.GetAllAsync(); // Use service to get all inscricoes
-        return _mapper.Map<List<ReadInscricaoDto>>(inscricoes);
-    }
-
-    [HttpGet("count")]
-    public async Task<ActionResult<int>> GetInscricoesCount()
-    {
-        var count = await _inscricaoService.GetInscricoesCountAsync(); // Use service to get count
-        return Ok(count);
+        var inscricoes = await inscricaoService.GetAllAsync();
+        return mapper.Map<List<ReadInscricaoDto>>(inscricoes);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteInscricao(int id)
     {
-        await _inscricaoService.DeleteAsync(id); // Don't assign to a variable
+        await inscricaoService.DeleteAsync(id);
         return NoContent();
     }
 
     [HttpDelete("{participanteId}/evento/{eventoId}")]
     public async Task<IActionResult> DeleteInscricao(int participanteId, int eventoId)
     {
-        var result = await _inscricaoService.DeleteInscricaoByParticipanteAndEventoAsync(participanteId, eventoId); // Use service
+        var result = await inscricaoService.DeleteInscricaoByParticipanteAndEventoAsync(participanteId, eventoId);
         if (!result)
         {
             return NotFound();
         }
         return NoContent();
+    }
+
+    [HttpGet("count")]
+    public async Task<ActionResult<int>> GetInscricoesCount()
+    {
+        var count = await inscricaoService.GetInscricoesCountAsync();
+        return Ok(count);
     }
 }
