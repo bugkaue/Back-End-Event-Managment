@@ -115,6 +115,8 @@ builder.Services.AddScoped<ReportService>();
 builder.Services.AddScoped<IGenericRepository<Evento>, GenericRepository<Evento>>();
 builder.Services.AddScoped<IParticipanteRepository, ParticipanteRepository>();
 builder.Services.AddScoped<IParticipanteService, ParticipanteService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 
 
 
