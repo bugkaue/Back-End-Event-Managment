@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjectSolutisDevTrail.Services.Interfaces;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace ProjectSolutisDevTrail.Controllers;
 

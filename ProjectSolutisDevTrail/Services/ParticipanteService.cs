@@ -8,57 +8,48 @@ using AutoMapper;
 
 namespace ProjectSolutisDevTrail.Services;
 
-public class ParticipanteService : IParticipanteService
+public class ParticipanteService(IParticipanteRepository repository, IMapper mapper) : IParticipanteService
 {
-    private readonly IParticipanteRepository _repository;
-    private readonly IMapper _mapper;
-
-    public ParticipanteService(IParticipanteRepository repository, IMapper mapper)
-    {
-        _repository = repository;
-        _mapper = mapper;
-    }
-
     public async Task<ReadParticipanteDto> CreateAsync(CreateParticipanteDto createParticipanteDto)
     {
-        var participante = _mapper.Map<Participante>(createParticipanteDto);
-        await _repository.AddAsync(participante);
-        return _mapper.Map<ReadParticipanteDto>(participante);
+        var participante = mapper.Map<Participante>(createParticipanteDto);
+        await repository.AddAsync(participante);
+        return mapper.Map<ReadParticipanteDto>(participante);
     }
 
     public async Task<ReadParticipanteDto> GetByIdAsync(int id)
     {
-        var participante = await _repository.GetByIdAsync(id);
-        return participante == null ? null : _mapper.Map<ReadParticipanteDto>(participante);
+        var participante = await repository.GetByIdAsync(id);
+        return participante == null ? null : mapper.Map<ReadParticipanteDto>(participante);
     }
 
     public async Task<List<ReadParticipanteDto>> GetAllAsync()
     {
-        var participantes = await _repository.GetAllAsync();
-        return _mapper.Map<List<ReadParticipanteDto>>(participantes);
+        var participantes = await repository.GetAllAsync();
+        return mapper.Map<List<ReadParticipanteDto>>(participantes);
     }
 
     public async Task UpdateAsync(int id, UpdateParticipanteDto updateParticipanteDto)
     {
-        var participante = await _repository.GetByIdAsync(id);
+        var participante = await repository.GetByIdAsync(id);
         if (participante != null)
         {
-            _mapper.Map(updateParticipanteDto, participante);
-            await _repository.UpdateAsync(participante);
+            mapper.Map(updateParticipanteDto, participante);
+            await repository.UpdateAsync(participante);
         }
     }
 
     public async Task DeleteAsync(int id)
     {
-        var participante = await _repository.GetByIdAsync(id);
+        var participante = await repository.GetByIdAsync(id);
         if (participante != null)
         {
-            await _repository.DeleteAsync(participante);
+            await repository.DeleteAsync(participante);
         }
     }
 
     public async Task<int> CountAsync()
     {
-        return await _repository.CountAsync();
+        return await repository.CountAsync();
     }
 }

@@ -6,63 +6,56 @@ using ProjectSolutisDevTrail.Models;
 
 namespace ProjectSolutisDevTrail.Data.Repositories;
 
-public class InscricaoRepository : GenericRepository<Inscricao>, IInscricaoRepository
+public class InscricaoRepository(EventoContext context) : GenericRepository<Inscricao>(context), IInscricaoRepository
 {
-    private readonly EventoContext _context;
-
-    public InscricaoRepository(EventoContext context) : base(context)
-    {
-        _context = context;
-    }
-
     public async Task<Inscricao> GetInscricaoByIdAsync(int id)
     {
-        return await _context.Inscricoes.FindAsync(id);
+        return await context.Inscricoes.FindAsync(id);
     }
 
     public async Task<IEnumerable<Inscricao>> GetAllInscricoesAsync()
     {
-        return await _context.Inscricoes.ToListAsync();
+        return await context.Inscricoes.ToListAsync();
     }
 
     public async Task<IEnumerable<Evento>> GetEventosByParticipanteIdAsync(int participanteId)
     {
-        return await _context.Inscricoes
+        return await context.Inscricoes
             .Where(i => i.ParticipanteId == participanteId)
             .Select(i => i.Evento)
             .ToListAsync();
     }
     public async Task<int> GetInscricoesCountByEventoIdAsync(int eventoId)
     {
-        return await _context.Inscricoes.CountAsync(i => i.EventoId == eventoId);
+        return await context.Inscricoes.CountAsync(i => i.EventoId == eventoId);
     }
 
     public async Task<int> GetInscricoesCountAsync()
     {
-        return await _context.Inscricoes.CountAsync();
+        return await context.Inscricoes.CountAsync();
     }
 
     public async Task AddInscricaoAsync(Inscricao inscricao)
     {
-        await _context.Inscricoes.AddAsync(inscricao);
-        await _context.SaveChangesAsync();
+        await context.Inscricoes.AddAsync(inscricao);
+        await context.SaveChangesAsync();
     }
 
     public async Task DeleteInscricaoAsync(Inscricao inscricao)
     {
-        _context.Inscricoes.Remove(inscricao);
-        await _context.SaveChangesAsync();
+        context.Inscricoes.Remove(inscricao);
+        await context.SaveChangesAsync();
     }
 
     public async Task<Inscricao> GetInscricaoByParticipanteAndEventoIdAsync(int participanteId, int eventoId)
     {
-        return await _context.Inscricoes
+        return await context.Inscricoes
             .FirstOrDefaultAsync(i => i.ParticipanteId == participanteId && i.EventoId == eventoId);
     }
 
     public async Task<IEnumerable<Participante>> GetParticipantesPorEventoId(int eventoId)
     {
-        return await _context.Inscricoes
+        return await context.Inscricoes
             .Where(i => i.EventoId == eventoId)
             .Select(i => i.Participante)
             .ToListAsync();
@@ -70,7 +63,7 @@ public class InscricaoRepository : GenericRepository<Inscricao>, IInscricaoRepos
 
     public async Task GenerateReportAsync(int eventoId, string outputStream)
     {
-        var inscricoes = await _context.Inscricoes
+        var inscricoes = await context.Inscricoes
             .Where(i => i.EventoId == eventoId)
             .ToListAsync();
 
@@ -85,7 +78,7 @@ public class InscricaoRepository : GenericRepository<Inscricao>, IInscricaoRepos
 
     public async Task<bool> DeleteInscricaoByParticipanteAndEventoAsync(int participanteId, int eventoId)
     {
-        var inscricao = await _context.Inscricoes
+        var inscricao = await context.Inscricoes
             .FirstOrDefaultAsync(i => i.ParticipanteId == participanteId && i.EventoId == eventoId);
 
         if (inscricao == null)
@@ -93,13 +86,13 @@ public class InscricaoRepository : GenericRepository<Inscricao>, IInscricaoRepos
             return false;
         }
 
-        _context.Inscricoes.Remove(inscricao);
-        await _context.SaveChangesAsync();
+        context.Inscricoes.Remove(inscricao);
+        await context.SaveChangesAsync();
         return true;
     }
     public async Task<IEnumerable<InscricaoCountDto>> GetInscricoesCountsByEventoIdsAsync(List<int> eventoIds)
     {
-        return await _context.Inscricoes
+        return await context.Inscricoes
             .Where(i => eventoIds.Contains(i.EventoId))
             .GroupBy(i => i.EventoId)
             .Select(g => new InscricaoCountDto

@@ -8,10 +8,11 @@ namespace ProjectSolutisDevTrail.Services.Interfaces;
 public interface IInscricaoService : IGenericRepository<Inscricao>, IInscricaoRepository
 {
     Task<IEnumerable<ReadEventoDto>> GetEventosComInscricoesByParticipanteIdAsync(int participanteId);
-    Task<IEnumerable<Evento>> GetEventosByParticipanteIdAsync(int participanteId); 
+    Task<IEnumerable<Evento>> GetEventosByParticipanteIdAsync(int participanteId);
     Task<Inscricao> GetInscricaoByParticipanteAndEventoIdAsync(int participanteId, int eventoId);
     Task<IEnumerable<InscricaoCountDto>> GetInscricoesCountsByEventoIdsAsync(List<int> eventoIds);
-    Task<IEnumerable<Participante>> GetParticipantesByEventoIdAsync(int eventoId); 
+    Task<IEnumerable<Participante>> GetParticipantesByEventoIdAsync(int eventoId);
     Task<int> GetInscricoesCountAsync();
-    Task GenerateReportAsync(int eventoId, Stream outputStream);    
+    Task GenerateReportAsync(int eventoId, Stream outputStream);
+
 }

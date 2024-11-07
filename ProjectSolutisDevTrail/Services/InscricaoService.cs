@@ -1,6 +1,7 @@
 ﻿using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
+using iText.Layout.Properties;
 using ProjectSolutisDevTrail.Data.Dtos;
 using ProjectSolutisDevTrail.Data.Repositories.Interfaces;
 using ProjectSolutisDevTrail.Models;
@@ -144,18 +145,39 @@ public class InscricaoService(IEventoRepository eventoRepository, IInscricaoRepo
             using (var pdfDocument = new PdfDocument(pdfWriter))
             {
                 var document = new Document(pdfDocument);
-                document.Add(new Paragraph($"Relatório para o Evento: {evento.Titulo}").SetFontSize(20));
 
+                // Adiciona título do relatório
+                var title = new Paragraph($"Relatório para o Evento: {evento.Titulo}")
+                    .SetFontSize(24)
+                    .SetBold()
+                    .SetTextAlignment(TextAlignment.CENTER)
+                    .SetMarginBottom(20);
+                document.Add(title);
+
+                // Adiciona informações do evento
+                var eventInfo = new Paragraph($"Descrição: {evento.Descricao}\nData e Hora: {evento.DataHora}\nLocal: {evento.Local}")
+                    .SetFontSize(14)
+                    .SetMarginBottom(20);
+                document.Add(eventInfo);
+
+                // Adiciona cabeçalho da tabela
+                var table = new Table(2).UseAllAvailableWidth();
+                table.AddHeaderCell(new Cell().Add(new Paragraph("Nome do Participante").SetBold()));
+                table.AddHeaderCell(new Cell().Add(new Paragraph("Sobrenome do Participante").SetBold()));
+
+                // Adiciona dados dos participantes
                 foreach (var participante in participantes)
                 {
-                    document.Add(new Paragraph($"Participante: {participante.Nome} {participante.Sobrenome}"));
+                    table.AddCell(new Cell().Add(new Paragraph(participante.Nome)));
+                    table.AddCell(new Cell().Add(new Paragraph(participante.Sobrenome)));
                 }
+
+                document.Add(table);
                 document.Close();
             }
         }
     }
-
-    public async Task<IEnumerable<Inscricao>> GetByIdsAsync(IEnumerable<int> ids)
+       public async Task<IEnumerable<Inscricao>> GetByIdsAsync(IEnumerable<int> ids)
     {
         return await inscricaoRepository.GetByIdsAsync(ids);
     }
