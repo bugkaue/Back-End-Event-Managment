@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjectSolutisDevTrail.Data;
 using ProjectSolutisDevTrail.Data.Dtos;
 using ProjectSolutisDevTrail.Models;
+using ProjectSolutisDevTrail.Services.Interfaces;
 
 namespace ProjectSolutisDevTrail.Controllers;
 
@@ -12,40 +13,32 @@ namespace ProjectSolutisDevTrail.Controllers;
 [Route("[controller]")]
 public class ParticipanteController : ControllerBase
 {
-    private readonly EventoContext _context;
-    private readonly IMapper _mapper;
+    private readonly IParticipanteService _service;
 
-    public ParticipanteController(EventoContext context, IMapper mapper)
+    public ParticipanteController(IParticipanteService service)
     {
-        _context = context;
-        _mapper = mapper;
+        _service = service;
     }
 
     [HttpPost]
     public async Task<ActionResult<ReadParticipanteDto>> CreateParticipante(CreateParticipanteDto createParticipanteDto)
     {
-        var participante = _mapper.Map<Participante>(createParticipanteDto);
-        _context.Participantes.Add(participante);
-        await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetParticipanteById), new { id = participante.Id }, _mapper.Map<ReadParticipanteDto>(participante));
+        var participante = await _service.CreateAsync(createParticipanteDto);
+        return CreatedAtAction(nameof(GetParticipanteById), new { id = participante.Id }, participante);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<ReadParticipanteDto>> GetParticipanteById(int id)
     {
-        var participante = await _context.Participantes.FindAsync(id);
-        if (participante == null)
-        {
-            return NotFound();
-        }
-        return _mapper.Map<ReadParticipanteDto>(participante);
+        var participante = await _service.GetByIdAsync(id);
+        return participante == null ? NotFound() : Ok(participante);
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ReadParticipanteDto>>> GetAllParticipantes()
     {
-        var participantes = await _context.Participantes.ToListAsync();
-        return _mapper.Map<List<ReadParticipanteDto>>(participantes);
+        var participantes = await _service.GetAllAsync();
+        return Ok(participantes);
     }
 
     [HttpPut("{id}")]
@@ -56,37 +49,21 @@ public class ParticipanteController : ControllerBase
             return BadRequest();
         }
 
-        var participante = await _context.Participantes.FindAsync(id);
-        if (participante == null)
-        {
-            return NotFound();
-        }
-
-        _mapper.Map(updateParticipanteDto, participante);
-        await _context.SaveChangesAsync();
-
+        await _service.UpdateAsync(id, updateParticipanteDto);
         return NoContent();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteParticipante(int id)
     {
-        var participante = await _context.Participantes.FindAsync(id);
-        if (participante == null)
-        {
-            return NotFound();
-        }
-
-        _context.Participantes.Remove(participante);
-        await _context.SaveChangesAsync();
-
+        await _service.DeleteAsync(id);
         return NoContent();
     }
 
-    [HttpGet("count")] // Nova rota para contar participantes
+    [HttpGet("count")]
     public async Task<ActionResult<int>> GetParticipanteCount()
     {
-        var count = await _context.Participantes.CountAsync(); // Conta o número total de participantes
-        return Ok(count); // Retorna a contagem em um formato de sucesso
+        var count = await _service.CountAsync();
+        return Ok(count);
     }
 }

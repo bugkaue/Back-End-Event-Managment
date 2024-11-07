@@ -113,6 +113,8 @@ builder.Services.AddScoped<IInscricaoService, InscricaoService>();
 builder.Services.AddScoped<IInscricaoRepository, InscricaoRepository>();
 builder.Services.AddScoped<ReportService>();
 builder.Services.AddScoped<IGenericRepository<Evento>, GenericRepository<Evento>>();
+builder.Services.AddScoped<IParticipanteRepository, ParticipanteRepository>();
+builder.Services.AddScoped<IParticipanteService, ParticipanteService>();
 
 
 
