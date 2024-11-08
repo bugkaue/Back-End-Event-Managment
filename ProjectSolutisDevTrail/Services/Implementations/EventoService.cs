@@ -5,7 +5,7 @@ using ProjectSolutisDevTrail.Data.Repositories.Interfaces.generic;
 using ProjectSolutisDevTrail.Models;
 using ProjectSolutisDevTrail.Services.Interfaces;
 
-namespace ProjectSolutisDevTrail.Services;
+namespace ProjectSolutisDevTrail.Services.Implementations;
 public class EventoService(IEventoRepository _eventoRepository, IInscricaoRepository _inscricaoRepository, IAtividadeService _atividadeService, UserManager<Usuario> _userManager) : IEventoService, IGenericRepository<Evento>
 {
     public async Task<IEnumerable<Evento>> GetAllAsync()

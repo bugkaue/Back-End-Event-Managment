@@ -1,7 +1,7 @@
 using ProjectSolutisDevTrail.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using ProjectSolutisDevTrail.Services;
+using ProjectSolutisDevTrail.Services.Implementations;
 using ProjectSolutisDevTrail.Data.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -19,11 +19,11 @@ using ProjectSolutisDevTrail.Data.Repositories.Generic;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("EventoConnection");
 
-// Adiciona os serviços do Identity e configuração de banco de dados
+// Adiciona os serviÃ§os do Identity e configuraÃ§Ã£o de banco de dados
 builder.Services.AddDbContext<EventoContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-// Configura o Identity com a classe de usuário personalizada (Usuario) e IdentityRole
+// Configura o Identity com a classe de usuÃ¡rio personalizada (Usuario) e IdentityRole
 builder.Services.AddIdentity<Usuario, IdentityRole>()
     .AddEntityFrameworkStores<EventoContext>()
     .AddDefaultTokenProviders();
@@ -45,7 +45,7 @@ builder.Services.AddCors(options =>
         });
 });
 
-// Configuração de autenticação JWT
+// ConfiguraÃ§Ã£o de autenticaÃ§Ã£o JWT
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -66,14 +66,14 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Adiciona os serviços ao contêiner.
+// Adiciona os serviÃ§os ao contÃªiner.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "API Project", Version = "v1" });
 
-    // Configurar a definição de segurança para Bearer Token
+    // Configurar a definiÃ§Ã£o de seguranÃ§a para Bearer Token
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -104,7 +104,7 @@ builder.Services.AddSwaggerGen(c =>
 // Adicionando AutoMapper para os Dtos
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-// Registrando os serviços e repositórios para injeção de dependência
+// Registrando os serviÃ§os e repositÃ³rios para injeÃ§Ã£o de dependÃªncia
 builder.Services.AddScoped<IEventoService, EventoService>();
 builder.Services.AddScoped<IEventoRepository, EventoRepository>();
 builder.Services.AddScoped<IAtividadeService, AtividadeService>();
@@ -117,18 +117,16 @@ builder.Services.AddScoped<IParticipanteRepository, ParticipanteRepository>();
 builder.Services.AddScoped<IParticipanteService, ParticipanteService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-
-
+builder.Services.AddScoped<IGenerateJwtToken, GenerateJwtTokenService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();
 
-// Cria um escopo para executar a tarefa de criar o usuário administrador
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
-        // Chama o método para criar o usuário administrador
         await SeedData.CreateAdminUser(services);
     }
     catch (Exception ex)
@@ -137,7 +135,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configuração do pipeline HTTP
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -146,11 +144,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Middleware de autenticação e autorização
+app.UseCors("AllowAllOrigins"); // Ensure this is before UseAuthentication and UseAuthorization
+
+// Middleware de autenticaÃ§Ã£o e autorizaÃ§Ã£o
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.UseCors("AllowAllOrigins");
 
 app.Run();

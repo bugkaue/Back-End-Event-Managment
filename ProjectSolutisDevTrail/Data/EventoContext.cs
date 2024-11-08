@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ProjectSolutisDevTrail.Models;
 
@@ -38,6 +37,7 @@ public class EventoContext : IdentityDbContext<Usuario>
             .WithMany(u => u.Eventos)
             .HasForeignKey(e => e.UsuarioId)
             .OnDelete(DeleteBehavior.Cascade);
+        
         // Definição da chave primária para Inscricao
         modelBuilder.Entity<Inscricao>()
             .HasKey(i => i.Id);

@@ -1,51 +1,41 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.IdentityModel.Tokens;
 using ProjectSolutisDevTrail.Data.Dtos;
 using ProjectSolutisDevTrail.Data.Repositories.Interfaces;
 using ProjectSolutisDevTrail.Models;
 using ProjectSolutisDevTrail.Services.Interfaces;
-using SendGrid;
-using SendGrid.Helpers.Mail;
-using System.IdentityModel.Tokens.Jwt;
-using System.Net;
-using System.Security.Claims;
-using System.Text;
 
-namespace ProjectSolutisDevTrail.Services
+namespace ProjectSolutisDevTrail.Services.Implementations
 {
-    public class AccountService : ControllerBase , IAccountService 
+    public class AccountService : ControllerBase, IAccountService
     {
         private readonly UserManager<Usuario> _userManager;
-        private readonly SignInManager<Usuario> _signInManager;
-        private readonly IConfiguration _configuration;
-        private readonly ISendGridClient _sendGridClient;
+        private readonly RoleManager<IdentityRole> _roleManager; 
+        private readonly IGenerateJwtToken _generateJwtTokenService;
+        private readonly IEmailService _emailService;
         private readonly IAccountRepository _accountRepository;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUrlHelperFactory _urlHelperFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AccountService(
             UserManager<Usuario> userManager,
-            SignInManager<Usuario> signInManager,
-            IConfiguration configuration,
-            ISendGridClient sendGridClient,
-            IAccountRepository accountRepository,
             RoleManager<IdentityRole> roleManager,
+            IGenerateJwtToken generateJwtTokenService,
+            IEmailService sendMailService,
+            IAccountRepository accountRepository,
             IUrlHelperFactory urlHelperFactory,
             IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
-            _configuration = configuration;
-            _sendGridClient = sendGridClient;
+            _roleManager = roleManager; 
+            _generateJwtTokenService = generateJwtTokenService;
+            _emailService = sendMailService;
             _accountRepository = accountRepository;
-            _roleManager = roleManager;
             _urlHelperFactory = urlHelperFactory;
             _httpContextAccessor = httpContextAccessor;
         }
-        public async Task<IActionResult> Register(RegisterDto model)
+         public async Task<IActionResult> Register(RegisterDto model)
         {
             if (!ModelState.IsValid)
                 return new BadRequestObjectResult(ModelState);
@@ -120,7 +110,7 @@ namespace ProjectSolutisDevTrail.Services
             else
                 return new BadRequestObjectResult("Falha na confirmação do e-mail.");
         }
-       
+
         public async Task<IActionResult> Login(LoginDto model)
         {
             if (!ModelState.IsValid)
@@ -186,20 +176,6 @@ namespace ProjectSolutisDevTrail.Services
             return new BadRequestObjectResult("Falha ao redefinir a senha.");
         }
 
-        public async Task<IActionResult> Logout()
-        {
-            if (Response != null && Response.Cookies != null)
-            {
-                Response.Cookies.Delete("jwtToken");
-            }
-            else
-            {
-                // Log error or handle the null case
-                return new BadRequestObjectResult(new { message = "Falha ao realizar o logout." });
-            }
-
-            return new OkObjectResult(new { message = "Logout bem-sucedido!" });
-        }
         public async Task<IActionResult> DeleteUser(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -225,75 +201,15 @@ namespace ProjectSolutisDevTrail.Services
 
         private async Task SendPasswordResetEmail(string email, string code)
         {
-            var from = new EmailAddress(_configuration["SendGrid:FromEmail"], _configuration["SendGrid:FromName"]);
-            var subject = "Código de Redefinição de Senha";
-            var to = new EmailAddress(email);
-            var plainTextContent = $"Seu código de redefinição de senha é: {code}";
-            var htmlContent = $"<strong>Seu código de redefinição de senha é:</strong> {code}";
-            var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
-
-            try
-            {
-                var response = await _sendGridClient.SendEmailAsync(msg);
-                if (response.StatusCode != HttpStatusCode.OK && response.StatusCode != HttpStatusCode.Accepted)
-                {
-                    var responseBody = await response.Body.ReadAsStringAsync();
-                    throw new Exception($"Erro ao enviar e-mail: {response.StatusCode} - {responseBody}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro ao enviar e-mail: {ex.Message}");
-                throw new Exception("Erro ao enviar e-mail de redefinição de senha. Verifique as configurações do SendGrid e tente novamente.");
-            }
+            await _emailService.SendPasswordResetEmail(email, code);
         }
-
-        private async Task SendConfirmationEmail(string email, string confirmationLink)
-        {
-            var from = new EmailAddress(_configuration["SendGrid:FromEmail"], _configuration["SendGrid:FromName"]);
-            var subject = "Confirmação de E-mail";
-            var to = new EmailAddress(email);
-            var plainTextContent = $"Por favor, confirme sua conta clicando no link: {confirmationLink}";
-            var htmlContent = $"<strong>Por favor, confirme sua conta clicando no link:</strong> <a href='{confirmationLink}'>Confirmar E-mail</a>";
-            var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
-
-            try
-            {
-                var response = await _sendGridClient.SendEmailAsync(msg);
-
-                if (response.StatusCode != HttpStatusCode.OK && response.StatusCode != HttpStatusCode.Accepted)
-                {
-                    var responseBody = await response.Body.ReadAsStringAsync();
-                    throw new Exception($"Erro ao enviar e-mail: {response.StatusCode} - {responseBody}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro ao enviar e-mail: {ex.Message}");
-                throw new Exception("Erro ao enviar e-mail de confirmação. Verifique as configurações do SendGrid e tente novamente.");
-            }
-        }
-
         private string GenerateJwtToken(Usuario user)
         {
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName ?? string.Empty),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id)
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: creds);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return _generateJwtTokenService.GenerateToken(user);
         }
-    }
+        private async Task SendConfirmationEmail(string email, string confirmationLink)
+        {
+            await _emailService.SendConfirmationEmail(email, confirmationLink);
+        }
+    }  
 }

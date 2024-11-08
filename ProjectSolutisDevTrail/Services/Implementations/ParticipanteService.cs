@@ -6,7 +6,7 @@ using ProjectSolutisDevTrail.Services.Interfaces;
 using ProjectSolutisDevTrail.Data.Dtos;
 using AutoMapper;
 
-namespace ProjectSolutisDevTrail.Services;
+namespace ProjectSolutisDevTrail.Services.Implementations;
 
 public class ParticipanteService(IParticipanteRepository repository, IMapper mapper) : IParticipanteService
 {

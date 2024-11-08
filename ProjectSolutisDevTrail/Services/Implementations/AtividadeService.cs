@@ -2,7 +2,7 @@
 using ProjectSolutisDevTrail.Models;
 using ProjectSolutisDevTrail.Services.Interfaces;
 
-namespace ProjectSolutisDevTrail.Services;
+namespace ProjectSolutisDevTrail.Services.Implementations;
 
 public class AtividadeService : IAtividadeService
 {

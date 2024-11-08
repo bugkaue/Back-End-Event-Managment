@@ -3,7 +3,7 @@ using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
 
-namespace ProjectSolutisDevTrail.Services;
+namespace ProjectSolutisDevTrail.Services.Implementations;
 
 public class ReportService
 {

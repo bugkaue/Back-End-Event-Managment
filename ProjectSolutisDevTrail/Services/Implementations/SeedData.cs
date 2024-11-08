@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using ProjectSolutisDevTrail.Data;
 using ProjectSolutisDevTrail.Models;
 
-namespace ProjectSolutisDevTrail.Services;
+namespace ProjectSolutisDevTrail.Services.Implementations;
+
 public static class SeedData
 {
     public static async Task CreateAdminUser(IServiceProvider serviceProvider)
@@ -9,13 +12,11 @@ public static class SeedData
         var userManager = serviceProvider.GetRequiredService<UserManager<Usuario>>();
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-        // Cria a role "Admin" se não existir
         if (!await roleManager.RoleExistsAsync("Admin"))
         {
             await roleManager.CreateAsync(new IdentityRole("Admin"));
         }
 
-        // Cria um usuário administrador padrão
         var adminUser = await userManager.FindByEmailAsync("admin@example.com");
         if (adminUser == null)
         {
@@ -25,7 +26,7 @@ public static class SeedData
                 Email = "admin@example.com",
                 EmailConfirmed = true,
                 Nome = "Admin",
-                Sobrenome = "User"  
+                Sobrenome = "User"
             };
 
             var result = await userManager.CreateAsync(adminUser, "Admin@123");

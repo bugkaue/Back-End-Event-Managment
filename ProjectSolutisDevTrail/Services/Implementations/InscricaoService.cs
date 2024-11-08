@@ -7,7 +7,7 @@ using ProjectSolutisDevTrail.Data.Repositories.Interfaces;
 using ProjectSolutisDevTrail.Models;
 using ProjectSolutisDevTrail.Services.Interfaces;
 
-namespace ProjectSolutisDevTrail.Services;
+namespace ProjectSolutisDevTrail.Services.Implementations;
 public class InscricaoService(IEventoRepository eventoRepository, IInscricaoRepository inscricaoRepository, ReportService reportService) : IInscricaoService
 {
 

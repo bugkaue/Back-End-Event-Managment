@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjectSolutisDevTrail.Data.Dtos;
-using ProjectSolutisDevTrail.Models;
 
 namespace ProjectSolutisDevTrail.Services.Interfaces
 {
@@ -11,7 +10,6 @@ namespace ProjectSolutisDevTrail.Services.Interfaces
         Task<IActionResult> Login(LoginDto model);
         Task<IActionResult> ForgotPassword(ForgotPasswordDto model);
         Task<IActionResult> ResetPassword(ResetPasswordDto model);
-        Task<IActionResult> Logout();
         Task<IActionResult> DeleteUser(string email);
     }
 }
