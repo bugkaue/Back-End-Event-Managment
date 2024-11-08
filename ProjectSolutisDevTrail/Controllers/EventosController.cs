@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjectSolutisDevTrail.Data.Dtos;
 using ProjectSolutisDevTrail.Services.Interfaces;
+
+namespace ProjectSolutisDevTrail.Controllers;
 
 [Route("[controller]")]
 [ApiController]

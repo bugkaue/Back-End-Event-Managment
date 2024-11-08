@@ -12,4 +12,5 @@ public interface IParticipanteService
     Task UpdateAsync(int id, UpdateParticipanteDto updateParticipanteDto);
     Task DeleteAsync(int id);
     Task<int> CountAsync();
+    Task<int> GetNumeroEventosInscritosAsync(int participanteId); // Novo método
 }

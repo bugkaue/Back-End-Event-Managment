@@ -52,4 +52,9 @@ public class ParticipanteService(IParticipanteRepository repository, IMapper map
     {
         return await repository.CountAsync();
     }
+    
+    public async Task<int> GetNumeroEventosInscritosAsync(int participanteId)
+    {
+        return await repository.GetNumeroEventosInscritosAsync(participanteId);
+    }
 }

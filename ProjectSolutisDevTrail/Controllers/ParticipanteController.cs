@@ -31,8 +31,17 @@ public class ParticipanteController(IParticipanteService service) : ControllerBa
     public async Task<ActionResult<IEnumerable<ReadParticipanteDto>>> GetAllParticipantes()
     {
         var participantes = await service.GetAllAsync();
-        return Ok(participantes);
+        var participantesComEventos = new List<ReadParticipanteDto>();
+
+        foreach (var participante in participantes)
+        {
+            participante.NumeroEventosInscritos = await service.GetNumeroEventosInscritosAsync(participante.Id);
+            participantesComEventos.Add(participante);
+        }
+
+        return Ok(participantesComEventos);
     }
+    
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateParticipante(int id, UpdateParticipanteDto updateParticipanteDto)

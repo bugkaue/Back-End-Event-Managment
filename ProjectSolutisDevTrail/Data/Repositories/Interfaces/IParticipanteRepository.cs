@@ -7,4 +7,5 @@ public interface IParticipanteRepository : IGenericRepository<Participante>
 {
     Task DeleteAsync(Participante participante);
     Task<int> CountAsync();
+    Task<int> GetNumeroEventosInscritosAsync(int participanteId); // Novo método
 }

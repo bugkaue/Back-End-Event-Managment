@@ -41,4 +41,12 @@ public class ParticipanteRepository(EventoContext context) : GenericRepository<P
     {
         return await context.Participantes.CountAsync();
     }
+    public async Task<int> GetNumeroEventosInscritosAsync(int participanteId)
+    {
+        return await context.Inscricoes
+            .Where(i => i.ParticipanteId == participanteId)
+            .Select(i => i.EventoId)
+            .Distinct()
+            .CountAsync();
+    }
 }

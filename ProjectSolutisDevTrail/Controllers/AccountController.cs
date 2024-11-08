@@ -43,6 +43,8 @@ public class AccountController(
 
 
     [HttpPost("logout")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(object))]
     public IActionResult Logout()
     {
         if (Response?.Cookies != null)
@@ -52,29 +54,10 @@ public class AccountController(
         }
         return BadRequest(new { message = "Falha ao realizar o logout." });
     }
+
     [HttpDelete("delete-user")]
     public async Task<IActionResult> DeleteUser([FromQuery] string email)
     {
         return await accountService.DeleteUser(email);
-    }
-
-    [HttpPost("send-confirmation-email")]
-    public async Task<IActionResult> SendConfirmationEmail([FromBody] string email)
-    {
-        var confirmationLink = await generateJwtTokenService.GenerateConfirmationLink(email);
-
-        await mailService.SendConfirmationEmail(email, confirmationLink);
-
-        return Ok(new { message = "E-mail de confirmação enviado!" });
-    }
-
-    [HttpPost("send-password-reset-email")]
-    public async Task<IActionResult> SendPasswordResetEmail([FromBody] string email)
-    {
-        var resetToken = await generateJwtTokenService.GeneratePasswordResetTokenAsync(email);
-
-        await mailService.SendPasswordResetEmail(email, resetToken);
-
-        return Ok(new { message = "E-mail de redefinição de senha enviado!" });
     }
 }
