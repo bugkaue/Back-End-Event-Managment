@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjectSolutisDevTrail.Data.Dtos;
 using ProjectSolutisDevTrail.Services.Interfaces;
@@ -47,6 +48,7 @@ public class EventosController(IEventoService _eventoService, IMapper _mapper) :
         return Ok(readEventoDto);
     }
 
+    [Authorize(Policy = "Admin" )]
     [HttpPost]
     public async Task<ActionResult<ReadEventoDto>> AddEvento([FromBody] CreateEventoDto createEventoDto)
     {
@@ -55,6 +57,7 @@ public class EventosController(IEventoService _eventoService, IMapper _mapper) :
         return CreatedAtAction(nameof(GetEventoById), new { id = readEventoDto.Id }, readEventoDto);
     }
 
+    [Authorize(Policy = "Admin" )]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateEvento(int id, [FromBody] UpdateEventoDto updateEventoDto)
     {
@@ -70,6 +73,7 @@ public class EventosController(IEventoService _eventoService, IMapper _mapper) :
         return NoContent();
     }
 
+    [Authorize(Policy = "Admin" )]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteEvento(int id)
     {
@@ -83,6 +87,7 @@ public class EventosController(IEventoService _eventoService, IMapper _mapper) :
         return NoContent();
     }
 
+    [Authorize(Policy = "Admin" )]
     [HttpGet("count")]
     public async Task<ActionResult<int>> GetEventosCount()
     {
@@ -90,6 +95,7 @@ public class EventosController(IEventoService _eventoService, IMapper _mapper) :
         return Ok(count);
     }
 
+    [Authorize(Policy = "Admin" )]
     [HttpGet("count/finalizados")]
     public async Task<ActionResult<int>> GetEventosFinalizadosCount()
     {

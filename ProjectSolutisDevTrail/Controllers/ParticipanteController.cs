@@ -13,6 +13,7 @@ namespace ProjectSolutisDevTrail.Controllers;
 [Route("[controller]")]
 public class ParticipanteController(IParticipanteService service) : ControllerBase
 {
+    [Authorize(Policy = "Admin" )]
     [HttpPost]
     public async Task<ActionResult<ReadParticipanteDto>> CreateParticipante(CreateParticipanteDto createParticipanteDto)
     {
@@ -20,6 +21,7 @@ public class ParticipanteController(IParticipanteService service) : ControllerBa
         return CreatedAtAction(nameof(GetParticipanteById), new { id = participante.Id }, participante);
     }
 
+    [Authorize(Policy = "Admin" )]
     [HttpGet("{id}")]
     public async Task<ActionResult<ReadParticipanteDto>> GetParticipanteById(int id)
     {
@@ -27,6 +29,7 @@ public class ParticipanteController(IParticipanteService service) : ControllerBa
         return participante == null ? NotFound() : Ok(participante);
     }
 
+    [Authorize(Policy = "Admin" )]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ReadParticipanteDto>>> GetAllParticipantes()
     {
@@ -62,6 +65,7 @@ public class ParticipanteController(IParticipanteService service) : ControllerBa
         return NoContent();
     }
 
+    [Authorize(Policy = "Admin" )]
     [HttpGet("count")]
     public async Task<ActionResult<int>> GetParticipanteCount()
     {

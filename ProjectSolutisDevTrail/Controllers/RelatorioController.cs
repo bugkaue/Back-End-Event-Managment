@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProjectSolutisDevTrail.Services.Interfaces;
 
 namespace ProjectSolutisDevTrail.Controllers;
@@ -14,6 +15,7 @@ public class RelatorioController : ControllerBase
         _inscricaoService = inscricaoService;
     }
 
+    [Authorize(Policy = "Admin" )]
     [HttpGet("gerar/{eventoId}")]
     public async Task<IActionResult> GenerateReport(int eventoId)
     {

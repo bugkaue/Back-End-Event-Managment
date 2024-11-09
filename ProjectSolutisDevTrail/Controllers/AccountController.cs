@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProjectSolutisDevTrail.Data.Dtos;
 using ProjectSolutisDevTrail.Services.Interfaces;
 
@@ -7,9 +8,7 @@ namespace ProjectSolutisDevTrail.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 public class AccountController(
-    IAccountService accountService,
-    IGenerateJwtToken generateJwtTokenService,
-    IEmailService mailService) : ControllerBase
+    IAccountService accountService) : ControllerBase
 {
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto model)
@@ -54,7 +53,8 @@ public class AccountController(
         }
         return BadRequest(new { message = "Falha ao realizar o logout." });
     }
-
+    
+    [Authorize(Policy = "Admin" )]
     [HttpDelete("delete-user")]
     public async Task<IActionResult> DeleteUser([FromQuery] string email)
     {

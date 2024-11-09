@@ -11,6 +11,9 @@ using SendGrid;
 using ProjectSolutisDevTrail.Services.Interfaces;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
+using FluentValidation.AspNetCore;
+using ProjectSolutisDevTrail.Data.Dtos;
+using ProjectSolutisDevTrail.Data.Dtos.FluentValidation;
 using ProjectSolutisDevTrail.Data.Repositories.Implementations;
 using ProjectSolutisDevTrail.Data.Repositories;
 using ProjectSolutisDevTrail.Data.Repositories.Interfaces.generic;
@@ -66,6 +69,15 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy =>
+        policy.RequireRole("Admin"));
+    // Usuario
+    options.AddPolicy("User", policy =>
+            policy.RequireRole("User"));
+});
+
 // Adiciona os serviços ao contêiner.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -103,6 +115,20 @@ builder.Services.AddSwaggerGen(c =>
 });
 // Adicionando AutoMapper para os Dtos
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+// Registrar FluentValidation
+builder.Services.AddFluentValidation(fv =>
+{
+    fv.RegisterValidatorsFromAssemblyContaining<CreateEventoDtoValidator>();
+    fv.RegisterValidatorsFromAssemblyContaining<CreateInscricaoDtoValidator>();
+    fv.RegisterValidatorsFromAssemblyContaining<CreateParticipanteDtoValidator>();
+    fv.RegisterValidatorsFromAssemblyContaining<LoginDtoValidator>();
+    fv.RegisterValidatorsFromAssemblyContaining<ForgotPasswordDtoValidator>();
+    fv.RegisterValidatorsFromAssemblyContaining<ResetPasswordDtoValidator>();
+    fv.RegisterValidatorsFromAssemblyContaining<RegisterDtoValidator>();
+    fv.RegisterValidatorsFromAssemblyContaining<UpdateEventoDtoValidator>();
+    fv.RegisterValidatorsFromAssemblyContaining<UpdateParticipanteDto>();
+});
 
 // Registrando os serviços e repositórios para injeção de dependência
 builder.Services.AddScoped<IEventoService, EventoService>();
