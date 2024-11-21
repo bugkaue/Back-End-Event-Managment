@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace ProjectSolutisDevTrail.Data.Dtos;
+﻿namespace ProjectSolutisDevTrail.Data.Dtos;
 
 public class LoginDto
 {

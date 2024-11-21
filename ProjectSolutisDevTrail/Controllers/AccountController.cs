@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjectSolutisDevTrail.Data.Dtos;
+using ProjectSolutisDevTrail.Services.Implementations;
 using ProjectSolutisDevTrail.Services.Interfaces;
 
 namespace ProjectSolutisDevTrail.Controllers;
@@ -40,7 +41,16 @@ public class AccountController(
         return await accountService.ResetPassword(model);
     }
 
-
+    [Authorize]
+    [HttpPost("logout")]
+    public ActionResult Logout([FromServices] AccountService authService)
+    {
+        var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+        authService.Logout(token);
+        return NoContent();
+    }
+    
+    /*
     [HttpPost("logout")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(object))]
@@ -53,8 +63,9 @@ public class AccountController(
         }
         return BadRequest(new { message = "Falha ao realizar o logout." });
     }
+    */
     
-    [Authorize(Policy = "Admin" )]
+    [Authorize(Roles = "Admin" )]
     [HttpDelete("delete-user")]
     public async Task<IActionResult> DeleteUser([FromQuery] string email)
     {

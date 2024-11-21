@@ -16,13 +16,6 @@ public class EventoRepository : GenericRepository<Evento>, IEventoRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Evento>> GetAllEventosAsync()
-    {
-        return await _context.Eventos
-            .Include(e => e.Inscricoes)                
-            .ToListAsync();
-    }
-
     public async Task<int> GetEventosCountAsync()
     {
         return await _context.Eventos.CountAsync();
@@ -61,18 +54,6 @@ public class EventoRepository : GenericRepository<Evento>, IEventoRepository
             .FirstOrDefaultAsync(e => e.Id == eventoId);
     }
 
-    public async Task AddEventoAsync(Evento evento)
-    {
-        await _context.Eventos.AddAsync(evento);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task UpdateEventoAsync(Evento evento)
-    { 
-        _context.Eventos.Update(evento);
-        await _context.SaveChangesAsync();
-    }
-
     public async Task<List<InscricaoCountDto>> GetInscricoesCountsByEventoIds(List<int> eventoIds)
     {
         var inscricoesCounts = await _context.Inscricoes
@@ -87,15 +68,4 @@ public class EventoRepository : GenericRepository<Evento>, IEventoRepository
 
         return inscricoesCounts;
     }
-
-    public async Task DeleteEventoAsync(int id)
-    {
-        var evento = await GetEventoByIdAsync(id);
-        if (evento != null)
-        {
-            _context.Eventos.Remove(evento);
-            await _context.SaveChangesAsync();
-        }
-    }
-
 }

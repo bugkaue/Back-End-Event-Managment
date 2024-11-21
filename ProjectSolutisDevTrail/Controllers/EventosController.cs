@@ -48,7 +48,7 @@ public class EventosController(IEventoService _eventoService, IMapper _mapper) :
         return Ok(readEventoDto);
     }
 
-    [Authorize(Policy = "Admin" )]
+    [Authorize(Roles = "Admin" )]
     [HttpPost]
     public async Task<ActionResult<ReadEventoDto>> AddEvento([FromBody] CreateEventoDto createEventoDto)
     {
@@ -57,7 +57,7 @@ public class EventosController(IEventoService _eventoService, IMapper _mapper) :
         return CreatedAtAction(nameof(GetEventoById), new { id = readEventoDto.Id }, readEventoDto);
     }
 
-    [Authorize(Policy = "Admin" )]
+    [Authorize(Roles = "Admin" )]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateEvento(int id, [FromBody] UpdateEventoDto updateEventoDto)
     {

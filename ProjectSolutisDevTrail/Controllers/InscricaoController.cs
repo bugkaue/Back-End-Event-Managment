@@ -11,7 +11,7 @@ namespace ProjectSolutisDevTrail.Controllers;
 [Route("[controller]")]
 public class InscricaoController(IMapper mapper, IEventoService eventoService, IInscricaoService inscricaoService) : ControllerBase
 {
-    [Authorize(Policy = "User" )]
+    [Authorize(Roles = "User" )]
     [HttpPost]
     public async Task<ActionResult<ReadInscricaoDto>> CreateInscricao(CreateInscricaoDto createInscricaoDto)
     {
@@ -70,7 +70,6 @@ public class InscricaoController(IMapper mapper, IEventoService eventoService, I
         return mapper.Map<List<ReadInscricaoDto>>(inscricoes);
     }
 
-    [Authorize(Policy = "Admin" )]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteInscricao(int id)
     {

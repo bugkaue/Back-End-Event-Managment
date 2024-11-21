@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProjectSolutisDevTrail.Models;
 using ProjectSolutisDevTrail.Services.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 
 namespace ProjectSolutisDevTrail.Controllers;
@@ -18,7 +16,7 @@ public class AtividadesController : ControllerBase
         _atividadeService = atividadeService;
     }
 
-    [Authorize(Policy = "Admin" )]
+    [Authorize(Roles = "Admin" )]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AtividadeRecente>>> GetAtividadesRecentes()
     {

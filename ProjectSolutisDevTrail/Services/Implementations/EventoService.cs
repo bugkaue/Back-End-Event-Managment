@@ -29,17 +29,17 @@ public class EventoService(IEventoRepository _eventoRepository, IInscricaoReposi
             UsuarioId = evento.Titulo // Certifique-se de que UsuarioId não seja nulo
         };
         await _atividadeService.AdicionarAtividadeAsync(atividadeRecente);
-
-        return evento;
+                    
+                            return evento;
     }
       public async Task UpdateAsync(Evento entity)
-    {
-        await _eventoRepository.UpdateAsync(entity);
-
-        var atividadeRecente = new AtividadeRecente
-        {
-            Descricao = $"Evento atualizado: {entity.Titulo}",
-            DataHora = DateTime.Now,
+                      {
+                          await _eventoRepository.UpdateAsync(entity);
+                  
+                          var atividadeRecente = new AtividadeRecente
+                          {
+                              Descricao = $"Evento atualizado: {entity.Titulo}",
+                              DataHora = DateTime.Now,
             UsuarioId = entity.Titulo
         };
         await _atividadeService.AdicionarAtividadeAsync(atividadeRecente);

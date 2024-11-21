@@ -22,12 +22,12 @@ public class Evento
     public string? UsuarioId { get; set; }  
     public Usuario? Usuario { get; set; }  
 
-    [NotMapped] // Não persiste no banco de dados
-    public bool IsAtivo => DataHora > DateTime.Now; // Propriedade calculada
+    [NotMapped] 
+    public bool IsAtivo => DataHora > DateTime.Now;
 
-    [NotMapped] // Não persiste no banco de dados
-    public bool IsFinalizado => DataHora <= DateTime.Now; // Propriedade que verifica se o evento está finalizado
+    [NotMapped] 
+    public bool IsFinalizado => DataHora <= DateTime.Now;
 
-    [NotMapped] // Não persiste no banco de dados
-    public int NumeroInscricoes => Inscricoes?.Count ?? 0; // Propriedade calculada
+    [NotMapped] 
+    public int NumeroInscricoes => Inscricoes?.Count ?? 0; 
 }

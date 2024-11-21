@@ -18,6 +18,7 @@ using ProjectSolutisDevTrail.Data.Repositories.Implementations;
 using ProjectSolutisDevTrail.Data.Repositories;
 using ProjectSolutisDevTrail.Data.Repositories.Interfaces.generic;
 using ProjectSolutisDevTrail.Data.Repositories.Generic;
+using ProjectSolutisDevTrail.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("EventoConnection");
@@ -145,6 +146,9 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IGenerateJwtToken, GenerateJwtTokenService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddSingleton<TokenRevocationService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<AccountService>();
 
 var app = builder.Build();
 
@@ -169,7 +173,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseMiddleware<TokenRevocationMiddleware>();
 app.UseCors("AllowAllOrigins"); // Ensure this is before UseAuthentication and UseAuthorization
 
 // Middleware de autenticação e autorização

@@ -17,6 +17,7 @@ namespace ProjectSolutisDevTrail.Services.Implementations
         private readonly IAccountRepository _accountRepository;
         private readonly IUrlHelperFactory _urlHelperFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly TokenRevocationService _tokenRevocationService;
 
         public AccountService(
             UserManager<Usuario> userManager,
@@ -25,7 +26,9 @@ namespace ProjectSolutisDevTrail.Services.Implementations
             IEmailService sendMailService,
             IAccountRepository accountRepository,
             IUrlHelperFactory urlHelperFactory,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            TokenRevocationService tokenRevocationService)
+        
         {
             _userManager = userManager;
             _roleManager = roleManager; 
@@ -34,6 +37,9 @@ namespace ProjectSolutisDevTrail.Services.Implementations
             _accountRepository = accountRepository;
             _urlHelperFactory = urlHelperFactory;
             _httpContextAccessor = httpContextAccessor;
+            _tokenRevocationService = tokenRevocationService;
+
+
         }
          public async Task<IActionResult> Register(RegisterDto model)
         {
@@ -129,7 +135,7 @@ namespace ProjectSolutisDevTrail.Services.Implementations
 
                 var userRoles = await _userManager.GetRolesAsync(user);
 
-                var token = GenerateJwtToken(user);
+                var token = _generateJwtTokenService.GenerateToken(user, isAdmin ? "Admin" : "User");
 
                 return new OkObjectResult(new
                 {
@@ -142,6 +148,11 @@ namespace ProjectSolutisDevTrail.Services.Implementations
 
             return new UnauthorizedObjectResult(new { message = "Credenciais inválidas." });
         }
+        
+        public void Logout(string token)
+        {
+            _tokenRevocationService.RevokeToken(token);
+        } 
 
         public async Task<IActionResult> ForgotPassword(ForgotPasswordDto model)
         {
@@ -198,14 +209,29 @@ namespace ProjectSolutisDevTrail.Services.Implementations
 
             return new OkObjectResult(new { message = "Usuário e dados relacionados excluídos com sucesso." });
         }
+        
+        public class AuthService
+        {
+            private readonly TokenRevocationService _tokenRevocationService;
 
+            public AuthService(TokenRevocationService tokenRevocationService)
+            {
+                _tokenRevocationService = tokenRevocationService;
+            }
+
+            public void Logout(string token)
+            {
+                _tokenRevocationService.RevokeToken(token);
+            }
+        }
+        
         private async Task SendPasswordResetEmail(string email, string code)
         {
             await _emailService.SendPasswordResetEmail(email, code);
         }
-        private string GenerateJwtToken(Usuario user)
+        private string GenerateJwtToken(Usuario user, string role)
         {
-            return _generateJwtTokenService.GenerateToken(user);
+            return _generateJwtTokenService.GenerateToken(user, role);
         }
         private async Task SendConfirmationEmail(string email, string confirmationLink)
         {
